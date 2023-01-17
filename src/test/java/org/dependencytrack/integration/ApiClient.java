@@ -22,7 +22,7 @@ import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.UnirestException;
 import kong.unirest.UnirestInstance;
-import kong.unirest.json.JSONObject;
+import org.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.dependencytrack.common.UnirestFactory;
 
