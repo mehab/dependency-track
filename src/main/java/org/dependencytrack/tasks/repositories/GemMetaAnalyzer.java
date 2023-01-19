@@ -20,17 +20,9 @@ package org.dependencytrack.tasks.repositories;
 
 import alpine.common.logging.Logger;
 import com.github.packageurl.PackageURL;
-import kong.unirest.GetRequest;
-import kong.unirest.HttpRequest;
-import kong.unirest.HttpResponse;
-import kong.unirest.JsonNode;
-import kong.unirest.UnirestException;
-import kong.unirest.UnirestInstance;
 import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
-import org.dependencytrack.common.UnirestFactory;
 import org.dependencytrack.model.Component;
 import org.dependencytrack.model.RepositoryType;
 import org.json.JSONObject;

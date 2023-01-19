@@ -23,7 +23,9 @@ import alpine.event.framework.Event;
 import alpine.event.framework.Subscriber;
 import alpine.model.ConfigProperty;
 import alpine.security.crypto.DataEncryption;
-import org.dependencytrack.common.UnirestFactory;
+import kong.unirest.Unirest;
+import kong.unirest.UnirestInstance;
+import org.dependencytrack.common.ManagedHttpClientFactory;
 import org.dependencytrack.event.VulnDbAnalysisEvent;
 import org.dependencytrack.model.Component;
 import org.dependencytrack.model.ConfigPropertyConstants;
@@ -114,7 +116,9 @@ public class VulnDbAnalysisTask extends BaseComponentAnalyzerTask implements Sub
      * @param components a list of Components
      */
     public void analyze(final List<Component> components) {
-        final VulnDbApi api = new VulnDbApi(this.apiConsumerKey, this.apiConsumerSecret, UnirestFactory.getUnirestInstance());
+        final UnirestInstance unirestInstance = Unirest.primaryInstance();
+        unirestInstance.config().httpClient(ManagedHttpClientFactory.newManagedHttpClient().getHttpClient());
+        final VulnDbApi api = new VulnDbApi(this.apiConsumerKey, this.apiConsumerSecret, unirestInstance);
         for (final Component component: components) {
             if (!component.isInternal() && isCapable(component)
                     && !isCacheCurrent(Vulnerability.Source.VULNDB, TARGET_HOST, component.getCpe())) {

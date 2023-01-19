@@ -34,17 +34,17 @@ import io.github.resilience4j.micrometer.tagged.TaggedRetryMetrics;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
 import io.github.resilience4j.retry.RetryRegistry;
-import kong.unirest.GetRequest;
-import kong.unirest.HttpResponse;
-import kong.unirest.HttpStatus;
-import kong.unirest.JsonNode;
-import kong.unirest.json.JSONArray;
-import kong.unirest.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.http.HttpHeaders;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.util.EntityUtils;
 import org.dependencytrack.common.ConfigKey;
-import org.dependencytrack.common.UnirestFactory;
+import org.dependencytrack.common.HttpClientPool;
 import org.dependencytrack.event.IndexEvent;
 import org.dependencytrack.event.SnykAnalysisEvent;
 import org.dependencytrack.model.Component;
@@ -58,7 +58,10 @@ import org.dependencytrack.parser.snyk.model.SnykError;
 import org.dependencytrack.persistence.QueryManager;
 import org.dependencytrack.util.NotificationUtil;
 import org.dependencytrack.util.RoundRobinAccessor;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -99,7 +102,7 @@ public class SnykAnalysisTask extends BaseComponentAnalyzerTask implements Cache
     private static final ExecutorService EXECUTOR;
 
     static {
-        final RetryRegistry retryRegistry = RetryRegistry.of(RetryConfig.<HttpResponse<?>>custom()
+        final RetryRegistry retryRegistry = RetryRegistry.of(RetryConfig.<HttpResponse>custom()
                 .intervalFunction(ofExponentialBackoff(
                         Duration.ofSeconds(Config.getInstance().getPropertyAsInt(ConfigKey.SNYK_RETRY_EXPONENTIAL_BACKOFF_INITIAL_DURATION_SECONDS)),
                         Config.getInstance().getPropertyAsInt(ConfigKey.SNYK_RETRY_EXPONENTIAL_BACKOFF_MULTIPLIER),
@@ -107,7 +110,7 @@ public class SnykAnalysisTask extends BaseComponentAnalyzerTask implements Cache
                 ))
                 .maxAttempts(Config.getInstance().getPropertyAsInt(ConfigKey.SNYK_RETRY_MAX_ATTEMPTS))
                 .retryOnException(exception -> false)
-                .retryOnResult(response -> HttpStatus.TOO_MANY_REQUESTS == response.getStatus())
+                .retryOnResult(response -> 429 == response.getStatusLine().getStatusCode())
                 .build());
         RETRY = retryRegistry.retry("snyk-api");
         RETRY.getEventPublisher()
@@ -294,30 +297,39 @@ public class SnykAnalysisTask extends BaseComponentAnalyzerTask implements Cache
     private void analyzeComponent(final Component component) {
         final String encodedPurl = URLEncoder.encode(component.getPurl().getCoordinates(), StandardCharsets.UTF_8);
         final String requestUrl = "%s/rest/orgs/%s/packages/%s/issues?version=%s".formatted(apiBaseUrl, apiOrgId, encodedPurl, apiVersion);
-        final GetRequest request = UnirestFactory.getUnirestInstance().get(requestUrl)
-                .header(HttpHeaders.AUTHORIZATION, "token " + apiTokenSupplier.get())
-                .header(HttpHeaders.ACCEPT, "application/vnd.api+json");
 
-        final HttpResponse<JsonNode> response = RETRY.executeSupplier(request::asJson);
-        apiVersionSunset = StringUtils.trimToNull(response.getHeaders().getFirst("Sunset"));
-        if (response.isSuccess()) {
-            handle(component, response.getBody().getObject());
-        } else if (response.getBody() != null) {
-            final List<SnykError> errors = new SnykParser().parseErrors(response.getBody().getObject());
-            if (!errors.isEmpty()) {
-                LOGGER.error("Analysis of component %s failed with HTTP status %d: \n%s"
-                        .formatted(component.getPurl(), response.getStatus(), errors.stream()
-                                .map(error -> " - %s: %s (%s)".formatted(error.title(), error.detail(), error.code()))
-                                .collect(Collectors.joining("\n"))));
+        try {
+            HttpUriRequest request = new HttpGet(requestUrl);
+            request.addHeader(HttpHeaders.AUTHORIZATION, "token " + apiTokenSupplier.get());
+            request.addHeader(HttpHeaders.ACCEPT, "application/vnd.api+json");
+            CloseableHttpResponse response = HttpClientPool.getClient().execute(request);
+            String stringResponse = EntityUtils.toString(response.getEntity());
+            org.json.JSONObject jsonResponse = new org.json.JSONObject(stringResponse);
+            apiVersionSunset = StringUtils.trimToNull(response.getFirstHeader("Sunset").getValue());
+            if (response.getStatusLine().getStatusCode()>= org.apache.http.HttpStatus.SC_OK && response.getStatusLine().getStatusCode()<HttpStatus.SC_MULTIPLE_CHOICES) {
+                handle(component, jsonResponse);
+            }else if (response.getEntity() != null) {
+                stringResponse = EntityUtils.toString(response.getEntity());
+                jsonResponse = new org.json.JSONObject(stringResponse);
+                final List<SnykError> errors = new SnykParser().parseErrors(jsonResponse);
+                if (!errors.isEmpty()) {
+                    LOGGER.error("Analysis of component %s failed with HTTP status %d: \n%s"
+                            .formatted(component.getPurl(), response.getStatusLine().getStatusCode(), errors.stream()
+                                    .map(error -> " - %s: %s (%s)".formatted(error.title(), error.detail(), error.code()))
+                                    .collect(Collectors.joining("\n"))));
+                } else {
+                    handleUnexpectedHttpResponse(LOGGER, request.getURI().toString(), response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
+                }
             } else {
-                handleUnexpectedHttpResponse(LOGGER, request.getUrl(), response.getStatus(), response.getStatusText());
+                handleUnexpectedHttpResponse(LOGGER, request.getURI().toString(), response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
             }
-        } else {
-            handleUnexpectedHttpResponse(LOGGER, request.getUrl(), response.getStatus(), response.getStatusText());
+
+        }catch (IOException ex){
+            handleRequestException(LOGGER, ex);
         }
     }
 
-    private void handle(final Component component, final JSONObject object) {
+    private void handle(final Component component, final org.json.JSONObject object) {
         try (QueryManager qm = new QueryManager()) {
             String purl = null;
             final JSONObject metaInfo = object.optJSONObject("meta");

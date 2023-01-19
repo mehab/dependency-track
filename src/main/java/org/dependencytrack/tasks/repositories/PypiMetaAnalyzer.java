@@ -20,7 +20,6 @@ package org.dependencytrack.tasks.repositories;
 
 import alpine.common.logging.Logger;
 import com.github.packageurl.PackageURL;
-import kong.unirest.UnirestException;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.util.EntityUtils;
@@ -101,7 +100,7 @@ public class PypiMetaAnalyzer extends AbstractMetaAnalyzer {
                 } else {
                     handleUnexpectedHttpResponse(LOGGER, url, response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase(), component);
                 }
-            } catch (UnirestException | IOException e) {
+            } catch (IOException e) {
                 handleRequestException(LOGGER, e);
             }
         }
