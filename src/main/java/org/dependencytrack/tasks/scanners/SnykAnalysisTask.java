@@ -297,7 +297,6 @@ public class SnykAnalysisTask extends BaseComponentAnalyzerTask implements Cache
     private void analyzeComponent(final Component component) {
         final String encodedPurl = URLEncoder.encode(component.getPurl().getCoordinates(), StandardCharsets.UTF_8);
         final String requestUrl = "%s/rest/orgs/%s/packages/%s/issues?version=%s".formatted(apiBaseUrl, apiOrgId, encodedPurl, apiVersion);
-
         try {
             HttpUriRequest request = new HttpGet(requestUrl);
             request.addHeader(HttpHeaders.AUTHORIZATION, "token " + apiTokenSupplier.get());
