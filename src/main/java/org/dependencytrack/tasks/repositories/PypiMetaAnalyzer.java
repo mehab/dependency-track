@@ -75,12 +75,12 @@ public class PypiMetaAnalyzer extends AbstractMetaAnalyzer {
                 if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
                     if (response.getEntity() != null) {
                         String stringResponse = EntityUtils.toString(response.getEntity());
-                        org.json.JSONObject jsonObject = new org.json.JSONObject(stringResponse);
-                        final org.json.JSONObject info = jsonObject.getJSONObject("info");
+                        JSONObject jsonObject = new JSONObject(stringResponse);
+                        final JSONObject info = jsonObject.getJSONObject("info");
                         final String latest = info.optString("version", null);
                         if (latest != null) {
                             meta.setLatestVersion(latest);
-                            final org.json.JSONObject releases = jsonObject.getJSONObject("releases");
+                            final JSONObject releases = jsonObject.getJSONObject("releases");
                             final JSONArray latestArray = releases.getJSONArray(latest);
                             if (latestArray.length() > 0) {
                                 final JSONObject release = latestArray.getJSONObject(0);

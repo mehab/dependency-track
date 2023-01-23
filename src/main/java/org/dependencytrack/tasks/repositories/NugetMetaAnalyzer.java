@@ -108,8 +108,8 @@ public class NugetMetaAnalyzer extends AbstractMetaAnalyzer {
             if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
                 if (response.getEntity() != null) {
                     String responseString = EntityUtils.toString(response.getEntity());
-                    org.json.JSONObject jsonObject = new org.json.JSONObject(responseString);
-                    final org.json.JSONArray versions = jsonObject.getJSONArray("versions");
+                    JSONObject jsonObject = new JSONObject(responseString);
+                    final JSONArray versions = jsonObject.getJSONArray("versions");
                     final String latest = findLatestVersion(versions); // get the last version in the array
                     meta.setLatestVersion(latest);
                 }
@@ -123,7 +123,7 @@ public class NugetMetaAnalyzer extends AbstractMetaAnalyzer {
         return false;
     }
 
-    private String findLatestVersion(org.json.JSONArray versions) {
+    private String findLatestVersion(JSONArray versions) {
         if (versions.length() < 1) {
             return null;
         }
@@ -147,7 +147,7 @@ public class NugetMetaAnalyzer extends AbstractMetaAnalyzer {
                 if (response.getEntity() != null) {
                     String stringResponse = EntityUtils.toString(response.getEntity());
                     if (!stringResponse.equalsIgnoreCase("") && !stringResponse.equalsIgnoreCase("{}")) {
-                        org.json.JSONObject jsonResponse = new org.json.JSONObject(stringResponse);
+                        JSONObject jsonResponse = new JSONObject(stringResponse);
                         final String updateTime = jsonResponse.optString("published", null);
                         if (updateTime != null) {
                             meta.setPublishedTimestamp(parseUpdateTime(updateTime));
@@ -171,10 +171,10 @@ public class NugetMetaAnalyzer extends AbstractMetaAnalyzer {
                 if (response.getStatusLine().getStatusCode() == org.apache.http.HttpStatus.SC_OK) {
                     if(response.getEntity()!=null){
                     String responseString = EntityUtils.toString(response.getEntity());
-                        org.json.JSONObject responseJson = new org.json.JSONObject(responseString);
-                        final org.json.JSONArray resources = responseJson.getJSONArray("resources");
-                        final org.json.JSONObject packageBaseResource = findResourceByType(resources, "PackageBaseAddress");
-                        final org.json.JSONObject registrationsBaseResource = findResourceByType(resources, "RegistrationsBaseUrl");
+                        JSONObject responseJson = new JSONObject(responseString);
+                        final JSONArray resources = responseJson.getJSONArray("resources");
+                        final JSONObject packageBaseResource = findResourceByType(resources, "PackageBaseAddress");
+                        final JSONObject registrationsBaseResource = findResourceByType(resources, "RegistrationsBaseUrl");
                         if (packageBaseResource != null && registrationsBaseResource != null) {
                             versionQueryUrl = packageBaseResource.getString("@id") + "%s/index.json";
                             registrationUrl = registrationsBaseResource.getString("@id") + "%s/%s.json";

@@ -22,6 +22,7 @@ import alpine.common.logging.Logger;
 import alpine.model.ConfigProperty;
 import alpine.security.crypto.DataEncryption;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -106,7 +107,7 @@ public class KennaSecurityUploader extends AbstractIntegrationPoint implements P
                     .build();
             request.setEntity(data);
             final CloseableHttpResponse response = HttpClientPool.getClient().execute(request);
-            if (response.getStatusLine().getStatusCode() == 200 && response.getEntity() != null) {
+            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK && response.getEntity() != null) {
                 String responseString = EntityUtils.toString(response.getEntity());
                 final JSONObject root = new JSONObject(responseString);
                 if (root.getString("success").equals("true")) {

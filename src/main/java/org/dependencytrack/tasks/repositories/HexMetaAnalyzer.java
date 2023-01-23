@@ -83,7 +83,7 @@ public class HexMetaAnalyzer extends AbstractMetaAnalyzer {
                 if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
                     if (response.getEntity()!=null) {
                         String responseString = EntityUtils.toString(response.getEntity());
-                        org.json.JSONObject jsonObject = new org.json.JSONObject(responseString);
+                        JSONObject jsonObject = new JSONObject(responseString);
                         final JSONArray releasesArray = jsonObject.getJSONArray("releases");
                         if (releasesArray.length() > 0) {
                             // The first one in the array is always the latest version

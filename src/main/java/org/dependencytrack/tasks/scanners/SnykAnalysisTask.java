@@ -35,6 +35,7 @@ import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
 import io.github.resilience4j.retry.RetryRegistry;
 import org.apache.http.Header;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.json.JSONArray;
@@ -317,13 +318,13 @@ public class SnykAnalysisTask extends BaseComponentAnalyzerTask implements Cache
             else {
                 apiVersionSunset = null;
             }
-            if (response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() < 300) {
+            if (response.getStatusLine().getStatusCode() >= HttpStatus.SC_OK && response.getStatusLine().getStatusCode() < HttpStatus.SC_MULTIPLE_CHOICES) {
                 String responseString = EntityUtils.toString(response.getEntity());
-                org.json.JSONObject responseJson = new org.json.JSONObject(responseString);
+                JSONObject responseJson = new JSONObject(responseString);
                 handle(component, responseJson);
             } else if (response.getEntity() != null) {
                 String responseString = EntityUtils.toString(response.getEntity());
-                org.json.JSONObject responseJson = new org.json.JSONObject(responseString);
+                JSONObject responseJson = new JSONObject(responseString);
                 final List<SnykError> errors = new SnykParser().parseErrors(responseJson);
                 if (!errors.isEmpty()) {
                     LOGGER.error("Analysis of component %s failed with HTTP status %d: \n%s"

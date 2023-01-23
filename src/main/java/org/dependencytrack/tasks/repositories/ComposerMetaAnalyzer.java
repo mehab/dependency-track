@@ -93,9 +93,9 @@ public class ComposerMetaAnalyzer extends AbstractMetaAnalyzer {
             if (jsonString.equalsIgnoreCase("{}")) {
                 return meta;
             }
-            org.json.JSONObject jsonObject = new org.json.JSONObject(jsonString);
+            JSONObject jsonObject = new JSONObject(jsonString);
             final String expectedResponsePackage = component.getPurl().getNamespace() + "/" + component.getPurl().getName();
-            final org.json.JSONObject responsePackages = jsonObject
+            final JSONObject responsePackages = jsonObject
                     .getJSONObject("packages");
             if (!responsePackages.has(expectedResponsePackage)) {
                 // the package no longer exists - like this one: https://repo.packagist.org/p/magento/adobe-ims.json

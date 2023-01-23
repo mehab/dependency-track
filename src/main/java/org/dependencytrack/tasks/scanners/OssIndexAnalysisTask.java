@@ -34,6 +34,7 @@ import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
 import io.github.resilience4j.retry.RetryRegistry;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -263,7 +264,7 @@ public class OssIndexAnalysisTask extends BaseComponentAnalyzerTask implements C
             final CloseableHttpResponse response = HttpClientPool.getClient().execute(request);
             HttpEntity responseEntity = response.getEntity();
             String responseString = EntityUtils.toString(responseEntity);
-            if (response.getStatusLine().getStatusCode() == 200) {
+            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
                 final OssIndexParser parser = new OssIndexParser();
                 return parser.parse(responseString);
             } else {

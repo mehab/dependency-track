@@ -30,6 +30,7 @@ import com.github.packageurl.PackageURLBuilder;
 import io.pebbletemplates.pebble.PebbleEngine;
 import io.pebbletemplates.pebble.template.PebbleTemplate;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -134,13 +135,13 @@ public class GitHubAdvisoryMirrorTask implements LoggableSubscriber {
         request.addHeader("Authorization", "bearer " + accessToken);
         request.addHeader("content-type", "application/json");
         request.addHeader("accept", "application/json");
-        org.json.JSONObject jsonBody = new org.json.JSONObject();
+        JSONObject jsonBody = new JSONObject();
         jsonBody.put("query", queryTemplate);
         StringEntity stringEntity = new StringEntity(jsonBody.toString());
         request.setEntity(stringEntity);
         CloseableHttpResponse response = HttpClientPool.getClient().execute(request);
 
-        if (response.getStatusLine().getStatusCode() < 200 || response.getStatusLine().getStatusCode() > 299) {
+        if (response.getStatusLine().getStatusCode() < HttpStatus.SC_OK || response.getStatusLine().getStatusCode() >= HttpStatus.SC_MULTIPLE_CHOICES) {
             LOGGER.error("An error was encountered retrieving advisories");
             LOGGER.error("HTTP Status : " + response.getStatusLine().getStatusCode() + " " + response.getStatusLine().getReasonPhrase());
             LOGGER.debug(queryTemplate);

@@ -19,7 +19,6 @@
 package org.dependencytrack.parser.ossindex;
 
 import alpine.common.logging.Logger;
-import com.fasterxml.jackson.databind.JsonNode;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,7 +41,7 @@ public class OssIndexParser {
     /**
      * Parses the JSON response from Sonatype OSS Index
      *
-     * @param responseString the JSON node to parse
+     * @param responseString the response as a String to parse
      * @return an ComponentReport object
      */
     public List<ComponentReport> parse(final String responseString) {

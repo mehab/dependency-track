@@ -19,6 +19,7 @@
 package org.dependencytrack.integrations.defectdojo;
 
 import alpine.common.logging.Logger;
+import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.apache.http.HttpEntity;
@@ -77,7 +78,7 @@ public class DefectDojoClient {
         request.setEntity(new UrlEncodedFormEntity(nameValuePairs, StandardCharsets.UTF_8));
         try {
             CloseableHttpResponse response = HttpClientPool.getClient().execute(request);
-            if (response.getStatusLine().getStatusCode() == 201) {
+            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_CREATED) {
                 LOGGER.debug("Successfully uploaded findings to DefectDojo");
             } else {
                 LOGGER.warn("DefectDojo Client did not receive expected response while attempting to upload "
@@ -101,7 +102,7 @@ public class DefectDojoClient {
         request.addHeader("Authorization", "Token " + token);
         try{
         CloseableHttpResponse response = HttpClientPool.getClient().execute(request);
-        if (response.getStatusLine().getStatusCode() == 200) {
+        if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
             if (response.getEntity()!=null) {
                 String stringResponse = EntityUtils.toString(response.getEntity());
                 JSONObject dojoObj = new JSONObject(stringResponse);
@@ -183,7 +184,7 @@ public class DefectDojoClient {
         request.setEntity(fileData);
         try{
             CloseableHttpResponse response = HttpClientPool.getClient().execute(request);
-            if (response.getStatusLine().getStatusCode() == 201) {
+            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_CREATED) {
                 LOGGER.debug("Successfully reimport findings to DefectDojo");
             } else {
                 LOGGER.warn("DefectDojo Client did not receive expected response while attempting to reimport"

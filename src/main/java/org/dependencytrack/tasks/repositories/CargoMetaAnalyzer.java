@@ -75,7 +75,7 @@ public class CargoMetaAnalyzer extends AbstractMetaAnalyzer {
                     final HttpEntity entity = response.getEntity();
                     if (entity != null) {
                         String responseString = EntityUtils.toString(entity);
-                        org.json.JSONObject jsonObject = new org.json.JSONObject(responseString);
+                        JSONObject jsonObject = new JSONObject(responseString);
                         final JSONObject crate = jsonObject.optJSONObject("crate");
                         if (crate != null) {
                             final String latest = crate.getString("newest_version");

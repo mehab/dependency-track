@@ -18,6 +18,7 @@
  */
 package org.dependencytrack.integration;
 
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
@@ -70,7 +71,7 @@ public class ApiClient {
         String jsonString = jsonObject.toString();
         request.setEntity(new StringEntity(jsonString));
         CloseableHttpResponse response = HttpClientPool.getClient().execute(request);
-        return (response.getStatusLine().getStatusCode() == 200);
+        return (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK);
     }
 
     public boolean uploadScan(UUID uuid, File scan) throws IOException {
@@ -83,6 +84,6 @@ public class ApiClient {
         String jsonString = jsonObject.toString();
         request.setEntity(new StringEntity(jsonString));
         CloseableHttpResponse response = HttpClientPool.getClient().execute(request);
-        return (response.getStatusLine().getStatusCode() == 200);
+        return (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK);
     }
 }
