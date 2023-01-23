@@ -255,14 +255,14 @@ public class OssIndexAnalysisTask extends BaseComponentAnalyzerTask implements C
         request.addHeader(HttpHeaders.ACCEPT, "application/json");
         request.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
         request.addHeader(HttpHeaders.USER_AGENT, ManagedHttpClientFactory.getUserAgent());
+        try {
+        request.setEntity(new StringEntity(payload.toString()));
         if (apiUsername != null && apiToken != null) {
             request.addHeader("Authorization", HttpUtil.basicAuthHeaderValue(apiUsername, apiToken));
         }
-        try {
             final CloseableHttpResponse response = HttpClientPool.getClient().execute(request);
             HttpEntity responseEntity = response.getEntity();
             String responseString = EntityUtils.toString(responseEntity);
-            response.setEntity(new StringEntity(payload.toString()));
             if (response.getStatusLine().getStatusCode() == 200) {
                 final OssIndexParser parser = new OssIndexParser();
                 return parser.parse(responseString);

@@ -71,7 +71,7 @@ public class DefectDojoClient {
         nameValuePairs.add(new BasicNameValuePair("scan_date", DATE_FORMAT.format(new Date())));
 
         HttpEntity data = MultipartEntityBuilder.create().setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
-                .addBinaryBody("file", findingsJson, ContentType.DEFAULT_BINARY, "findings.json")
+                .addBinaryBody("file", findingsJson, ContentType.APPLICATION_JSON, "findings.json")
                 .build();
         request.setEntity(data);
         request.setEntity(new UrlEncodedFormEntity(nameValuePairs, StandardCharsets.UTF_8));
@@ -178,7 +178,7 @@ public class DefectDojoClient {
         nameValuePairs.add(new BasicNameValuePair("scan_date", DATE_FORMAT.format(new Date())));
         request.setEntity(new UrlEncodedFormEntity(nameValuePairs, StandardCharsets.UTF_8));
         HttpEntity fileData = MultipartEntityBuilder.create().setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
-                .addBinaryBody("file", findingsJson, ContentType.DEFAULT_BINARY, "findings.json")
+                .addBinaryBody("file", findingsJson, ContentType.APPLICATION_JSON, "findings.json")
                 .build();
         request.setEntity(fileData);
         try{

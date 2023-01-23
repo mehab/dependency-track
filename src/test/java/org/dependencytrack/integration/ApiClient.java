@@ -18,13 +18,13 @@
  */
 package org.dependencytrack.integration;
 
-import kong.unirest.HttpResponse;
-import kong.unirest.JsonNode;
-import kong.unirest.UnirestException;
-import kong.unirest.UnirestInstance;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.util.EntityUtils;
+import org.dependencytrack.common.HttpClientPool;
 import org.json.JSONObject;
 import org.apache.commons.io.FileUtils;
-import org.dependencytrack.common.UnirestFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,46 +41,48 @@ public class ApiClient {
         this.apiKey = apiKey;
     }
 
-    public UUID createProject(String name, String version) throws UnirestException {
-        final UnirestInstance ui = UnirestFactory.getUnirestInstance();
-        final HttpResponse<JsonNode> response = ui.put(baseUrl + "/api/v1/project")
-                .header("Content-Type", "application/json")
-                .header("X-API-Key", apiKey)
-                .body(new JSONObject()
-                        .put("name", name)
-                        .put("version", version)
-                )
-                .asJson();
-        if (response.getStatus() == 201) {
-            return UUID.fromString(response.getBody().getObject().getString("uuid"));
+    public UUID createProject(String name, String version) throws IOException {
+        HttpPut request = new HttpPut(baseUrl + "/api/v1/project");
+        request.addHeader("Content-Type", "application/json");
+        request.addHeader("X-API-Key", apiKey);
+        JSONObject jsonObject = new JSONObject();
+                jsonObject.put("name", name);
+                jsonObject.put("version", version);
+        String jsonString = jsonObject.toString();
+        request.setEntity(new StringEntity(jsonString));
+        CloseableHttpResponse response = HttpClientPool.getClient().execute(request);
+        if (response.getStatusLine().getStatusCode() == 201) {
+            String responseString = EntityUtils.toString(response.getEntity());
+            JSONObject jsonObject1 = new JSONObject(responseString);
+            return UUID.fromString(jsonObject1.getString("uuid"));
         }
-        System.out.println("Error creating project " + name + " status: " + response.getStatus());
+        System.out.println("Error creating project " + name + " status: " + response.getStatusLine().getStatusCode());
         return null;
     }
 
-    public boolean uploadBom(UUID uuid, File bom) throws IOException, UnirestException {
-        final UnirestInstance ui = UnirestFactory.getUnirestInstance();
-        final HttpResponse<JsonNode> response = ui.put(baseUrl + "/api/v1/bom")
-                .header("Content-Type", "application/json")
-                .header("X-API-Key", apiKey)
-                .body(new JSONObject()
-                        .put("project", uuid.toString())
-                        .put("bom", Base64.getEncoder().encodeToString(FileUtils.readFileToByteArray(bom)))
-                )
-                .asJson();
-        return (response.getStatus() == 200);
+    public boolean uploadBom(UUID uuid, File bom) throws IOException, IOException {
+        HttpPut request = new HttpPut(baseUrl + "/api/v1/bom");
+        request.addHeader("Content-Type", "application/json");
+        request.addHeader("X-API-Key", apiKey);
+        JSONObject jsonObject = new JSONObject()
+                .put("project", uuid.toString())
+                .put("bom", Base64.getEncoder().encodeToString(FileUtils.readFileToByteArray(bom)));
+        String jsonString = jsonObject.toString();
+        request.setEntity(new StringEntity(jsonString));
+        CloseableHttpResponse response = HttpClientPool.getClient().execute(request);
+        return (response.getStatusLine().getStatusCode() == 200);
     }
 
-    public boolean uploadScan(UUID uuid, File scan) throws IOException, UnirestException {
-        final UnirestInstance ui = UnirestFactory.getUnirestInstance();
-        final HttpResponse<JsonNode> response = ui.put(baseUrl + "/api/v1/scan")
-                .header("Content-Type", "application/json")
-                .header("X-API-Key", apiKey)
-                .body(new JSONObject()
+    public boolean uploadScan(UUID uuid, File scan) throws IOException {
+        HttpPut request = new HttpPut(baseUrl + "/api/v1/scan");
+        request.addHeader("Content-Type", "application/json");
+        request.addHeader("X-API-Key", apiKey);
+        JSONObject jsonObject = new JSONObject()
                         .put("project", uuid.toString())
-                        .put("scan", Base64.getEncoder().encodeToString(FileUtils.readFileToByteArray(scan)))
-                )
-                .asJson();
-        return (response.getStatus() == 200);
+                        .put("scan", Base64.getEncoder().encodeToString(FileUtils.readFileToByteArray(scan)));
+        String jsonString = jsonObject.toString();
+        request.setEntity(new StringEntity(jsonString));
+        CloseableHttpResponse response = HttpClientPool.getClient().execute(request);
+        return (response.getStatusLine().getStatusCode() == 200);
     }
 }
