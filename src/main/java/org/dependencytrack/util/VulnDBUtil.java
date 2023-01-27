@@ -40,9 +40,13 @@ public class VulnDBUtil {
     private final String consumerKey;
     private final String consumerSecret;
 
-    public VulnDBUtil(String consumerKey, String consumerSecret) {
+    private final String apiBaseUrl;
+
+
+    public VulnDBUtil(String consumerKey, String consumerSecret, String apiBaseUrl) {
         this.consumerKey = consumerKey;
         this.consumerSecret = consumerSecret;
+        this.apiBaseUrl = apiBaseUrl;
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VulnDBUtil.class);
@@ -56,7 +60,7 @@ public class VulnDBUtil {
             LOGGER.error("An error occurred while URL encoding a CPE", var6);
         }
 
-        return this.getResults("https://vulndb.cyberriskanalytics.com/api/v1/vulnerabilities/find_by_cpe?&cpe=" + encodedCpe, Vulnerability.class, size, page);
+        return this.getResults(apiBaseUrl+"/api/v1/vulnerabilities/find_by_cpe?&cpe=" + encodedCpe, Vulnerability.class, size, page);
     }
 
     private Results getResults(String url, Class clazz, int size, int page) {
@@ -106,7 +110,7 @@ public class VulnDBUtil {
     }
 
     public <T> Results<T> parse(JSONObject jsonResponse, Class<? extends ApiObject> apiObject) {
-        LOGGER.debug("Parsing JSON node");
+        LOGGER.debug("Parsing JSON response");
         Results<T> results = new Results();
         results.setPage(jsonResponse.getInt("current_page"));
         results.setTotal(jsonResponse.getInt("total_entries"));

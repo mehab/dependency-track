@@ -19,6 +19,7 @@
 package org.dependencytrack.tasks.scanners;
 
 import alpine.common.logging.Logger;
+import alpine.common.util.UrlUtil;
 import alpine.event.framework.Event;
 import alpine.event.framework.Subscriber;
 import alpine.model.ConfigProperty;
@@ -35,6 +36,7 @@ import org.dependencytrack.util.VulnDBUtil;
 import us.springett.vulndbdatamirror.parser.model.Results;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Subscriber task that performs an analysis of component using VulnDB REST API.
@@ -44,12 +46,18 @@ import java.util.List;
  */
 public class VulnDbAnalysisTask extends BaseComponentAnalyzerTask implements Subscriber {
 
+    public VulnDbAnalysisTask(String apiBaseUrl) {
+        this.apiBaseUrl = apiBaseUrl;
+    }
+
     private static final Logger LOGGER = Logger.getLogger(VulnDbAnalysisTask.class);
     private static final String TARGET_HOST = "https://vulndb.cyberriskanalytics.com/";
     private static final int PAGE_SIZE = 100;
     private VulnerabilityAnalysisLevel vulnerabilityAnalysisLevel;
     private String apiConsumerKey;
     private String apiConsumerSecret;
+
+    private String apiBaseUrl;
 
     public AnalyzerIdentity getAnalyzerIdentity() {
         return AnalyzerIdentity.VULNDB_ANALYZER;
@@ -72,6 +80,11 @@ public class VulnDbAnalysisTask extends BaseComponentAnalyzerTask implements Sub
                         ConfigPropertyConstants.SCANNER_VULNDB_OAUTH1_CONSUMER_SECRET.getGroupName(),
                         ConfigPropertyConstants.SCANNER_VULNDB_OAUTH1_CONSUMER_SECRET.getPropertyName()
                 );
+                if (this.apiBaseUrl == null) {
+                    LOGGER.warn("No API base URL provided; Skipping");
+                    return;
+                }
+
                 if (apiConsumerKey == null || apiConsumerKey.getPropertyValue() == null) {
                     LOGGER.warn("An OAuth 1.0a consumer key has not been specified for use with VulnDB. Skipping");
                     return;
@@ -114,7 +127,7 @@ public class VulnDbAnalysisTask extends BaseComponentAnalyzerTask implements Sub
      * @param components a list of Components
      */
     public void analyze(final List<Component> components) {
-        final VulnDBUtil api = new VulnDBUtil(this.apiConsumerKey, this.apiConsumerSecret);
+        final VulnDBUtil api = new VulnDBUtil(this.apiConsumerKey, this.apiConsumerSecret, this.apiBaseUrl);
         for (final Component component : components) {
             if (!component.isInternal() && isCapable(component)
                     && !isCacheCurrent(Vulnerability.Source.VULNDB, TARGET_HOST, component.getCpe())) {
@@ -153,4 +166,5 @@ public class VulnDbAnalysisTask extends BaseComponentAnalyzerTask implements Sub
             return results.getPage() * PAGE_SIZE < results.getTotal();
         }
     }
+
 }
