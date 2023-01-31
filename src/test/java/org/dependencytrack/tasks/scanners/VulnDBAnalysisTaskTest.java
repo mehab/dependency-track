@@ -135,24 +135,87 @@ public class VulnDBAnalysisTaskTest extends PersistenceCapableTest {
                 .respond(response()
                         .withStatusCode(200)
                         .withHeader(HttpHeaders.CONTENT_TYPE, "application/vnd.api+json")
-                        .withBody("""
+                        .withBody("""                                
                                 {
-                                   "jsonapi": {
-                                     "version": "1.0"
-                                   },
-                                   "data": [],
-                                   "links": {
-                                     "self": "/orgs/da563045-a462-421a-ae47-53239fe46612/packages/pkg%3Amaven%2Fcom.fasterxml.woodstox%2Fwoodstox-core%406.4.0/issues?version=2023-01-04&limit=1000&offset=0"
-                                   },
-                                   "meta": {
-                                     "package": {
-                                       "name": "woodstox-core",
-                                       "type": "maven",
-                                       "url": "pkg:maven/com.fasterxml.woodstox/woodstox-core@6.4.0",
-                                       "version": "6.4.0"
-                                     }
-                                   }
-                                 }
+                                  "current_page": 1,
+                                  "total_entries": 1,
+                                  "results": [
+                                    {
+                                      "vulndb_id": 1,
+                                      "title": "test title",
+                                      "classifications": [
+                                        {
+                                          "id": 1,
+                                          "name": "test vulnerability",
+                                          "longname": "test vulnerability 1 1",
+                                          "description": "test test",
+                                          "mediumtext": "some text"
+                                        }
+                                      ],
+                                      "authors": [
+                                        {
+                                          "id": 23,
+                                          "name": "test author",
+                                          "company": "test company"
+                                        }
+                                      ],
+                                      "ext_references": [
+                                        {
+                                          "type": "external test reference",
+                                          "value": "external test reference value"
+                                        }
+                                      ],
+                                      "ext_texts": [
+                                        {
+                                          "type": "external test texts",
+                                          "value": "external test texts value"
+                                        }
+                                      ],
+                                      "cvss_metrics": [
+                                                                
+                                      ],
+                                      "cvss_version_three_metrics": [
+                                                                
+                                      ],
+                                      "nvd_additional_information": [
+                                        {
+                                          "summary": "test summary",
+                                          "cwe_id": "test1",
+                                          "cve_id": "test4"
+                                        }
+                                      ],
+                                      "vendors": [
+                                        {
+                                          "vendor": {
+                                            "id": 1,
+                                            "name": "vendor one test",
+                                            "short_name": "test",
+                                            "vendor_url": "http://test.com",
+                                            "products": [
+                                              {
+                                                "id": 45,
+                                                "name": "test product name",
+                                                "versions": [
+                                                  {
+                                                    "id": 2,
+                                                    "name": "version 2",
+                                                    "affected": false,
+                                                    "cpe": [
+                                                      {
+                                                        "cpe": "test cpe",
+                                                        "type": "test type"
+                                                      }
+                                                    ]
+                                                  }
+                                                ]
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
                                 """));
 
         var project = new Project();
