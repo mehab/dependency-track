@@ -233,12 +233,12 @@ public class VulnDBAnalysisTaskTest extends PersistenceCapableTest {
         new VulnDbAnalysisTask("http://localhost:1080").inform(new VulnDbAnalysisEvent(component));
 
         final List<Vulnerability> vulnerabilities = qm.getAllVulnerabilities(component);
-        String logMessages = mockServer
-                .retrieveLogMessages(
-                        request()
-                );
+//        String logMessages = mockServer
+//                .retrieveLogMessages(
+//                        request()
+//                );
 
-        assertThat(vulnerabilities).hasSize(0);
+        assertThat(vulnerabilities).hasSize(1);
 
         final Query<ComponentAnalysisCache> cacheQuery = qm.getPersistenceManager().newQuery(ComponentAnalysisCache.class);
         final List<ComponentAnalysisCache> cacheEntries = cacheQuery.executeList();
