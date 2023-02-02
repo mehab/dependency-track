@@ -21,6 +21,7 @@ package org.dependencytrack.integrations.defectdojo;
 import alpine.common.logging.Logger;
 import com.google.common.base.Throwables;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.utils.URIBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.apache.http.HttpEntity;
@@ -36,8 +37,10 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.dependencytrack.common.HttpClientPool;
 
+import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -96,12 +99,15 @@ public class DefectDojoClient {
     // Pulling DefectDojo 'tests' API endpoint with engagementID filter on, and retrieve a list of existing tests
     public ArrayList getDojoTestIds(final String token, final String eid) {
         LOGGER.debug("Pulling DefectDojo Tests API ...");
-        String tests_uri = "/api/v2/tests/";
+        String testsUri = "/api/v2/tests/";
         LOGGER.debug("Make the first pagination call");
-        HttpGet request = new HttpGet(baseURL + tests_uri + "?limit=100&engagement=" + eid);
+        try{
+        URIBuilder uriBuilder = new URIBuilder(baseURL +testsUri);
+        uriBuilder.addParameter("limit", "100");
+        uriBuilder.addParameter("engagement", eid);
+        HttpGet request = new HttpGet(uriBuilder.build().toString());
         request.addHeader("accept", "application/json");
         request.addHeader("Authorization", "Token " + token);
-        try{
         CloseableHttpResponse response = HttpClientPool.getClient().execute(request);
         if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
             if (response.getEntity()!=null) {
@@ -131,6 +137,8 @@ public class DefectDojoClient {
                     + response.getStatusLine().getStatusCode() + " - " + response.getStatusLine().getReasonPhrase());
         }}catch (IOException ex){
             LOGGER.error("Error while getting dojo test id's"+ex.getMessage());
+        }catch (URISyntaxException ex){
+            LOGGER.error("Error while creating get request url for Defect dojo client");
         }
         return new ArrayList<>();
     }
