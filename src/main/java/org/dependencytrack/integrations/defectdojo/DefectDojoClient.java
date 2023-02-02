@@ -117,7 +117,8 @@ public class DefectDojoClient {
                 while (dojoObj.get("next") != null) {
                     nextUrl = dojoObj.get("next").toString();
                     LOGGER.debug("Making the subsequent pagination call on " + nextUrl);
-                    request = new HttpGet(nextUrl);
+                    uriBuilder = new URIBuilder(nextUrl);
+                    request = new HttpGet(uriBuilder.build().toString());
                     request.addHeader("accept", "application/json");
                     request.addHeader("Authorization", "Token " + token);
                     response = HttpClientPool.getClient().execute(request);
