@@ -19,7 +19,6 @@
 package org.dependencytrack.integrations.defectdojo;
 
 import alpine.common.logging.Logger;
-import com.google.common.base.Throwables;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.URIBuilder;
 import org.json.JSONArray;
@@ -37,7 +36,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.dependencytrack.common.HttpClientPool;
 
-import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -45,7 +43,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -92,7 +89,8 @@ public class DefectDojoClient {
                 uploader.handleUnexpectedHttpResponse(LOGGER, request.getURI().toString(), response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
             }
         } catch (IOException ex) {
-            LOGGER.error("Error while sending request from upload DT findings defectDojo Client" + ex.getMessage()+" Stack trace: "+ Arrays.toString(ex.getStackTrace()));
+            LOGGER.warn("Error while sending request from upload DT findings defectDojo Client" + ex.getMessage());
+            uploader.handleException(LOGGER, ex);
         }
     }
 
@@ -136,9 +134,11 @@ public class DefectDojoClient {
             LOGGER.warn("DefectDojo Client did not receive expected response while attempting to retrieve tests list "
                     + response.getStatusLine().getStatusCode() + " - " + response.getStatusLine().getReasonPhrase());
         }}catch (IOException ex){
-            LOGGER.error("Error while getting dojo test id's"+ex.getMessage());
+            LOGGER.warn("Error while getting dojo test id's"+ex.getMessage());
+            uploader.handleException(LOGGER, ex);
         }catch (URISyntaxException ex){
-            LOGGER.error("Error while creating get request url for Defect dojo client");
+            LOGGER.warn("Error while creating get request url for Defect dojo client");
+            uploader.handleException(LOGGER, ex);
         }
         return new ArrayList<>();
     }
@@ -202,7 +202,8 @@ public class DefectDojoClient {
                 uploader.handleUnexpectedHttpResponse(LOGGER, request.getURI().toString(), response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
             }
         }catch (IOException ex){
-            LOGGER.error("Error while sending request from reimport DT findings defectDojo Client" + ex.getMessage()+" with stack trace: "+ Throwables.getStackTraceAsString(ex));
+            LOGGER.warn("Error while sending request from reimport DT findings defectDojo Client" + ex.getMessage());
+            uploader.handleException(LOGGER, ex);
         }
     }
 

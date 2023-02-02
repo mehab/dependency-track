@@ -88,7 +88,6 @@ public class VulnDbParser {
     }
 
     public <T> Results<T> parse(File file, Class<? extends ApiObject> apiObject) throws IOException {
-        if (file.isFile()) {
             String jsonData = Files.readString(Paths.get(file.toURI()), Charset.defaultCharset());
             Object result = null;
             try{
@@ -101,8 +100,6 @@ public class VulnDbParser {
             } else{
                 return this.parse((JSONArray) result, apiObject);
             }
-        }
-        return null;
     }
 
     private List<Cpe> parseCpes(JSONArray rso) {
