@@ -1,4 +1,4 @@
-package org.dependencytrack.model.VulnDb;
+package org.dependencytrack.model.vulnDb;
 
 public interface ApiObject {
     int getId();

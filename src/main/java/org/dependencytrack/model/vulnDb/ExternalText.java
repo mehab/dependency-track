@@ -1,10 +1,10 @@
-package org.dependencytrack.model.VulnDb;
+package org.dependencytrack.model.vulnDb;
 
-public class ExternalReference {
+public class ExternalText {
     private String type;
     private String value;
 
-    public ExternalReference() {
+    public ExternalText() {
     }
 
     public String getType() {
@@ -23,3 +23,4 @@ public class ExternalReference {
         this.value = value;
     }
 }
+
