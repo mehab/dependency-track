@@ -1,4 +1,4 @@
-package org.dependencytrack.model.vulnDb;
+package org.dependencytrack.model.vuln_vb;
 
 import java.io.File;
 import java.io.IOException;
