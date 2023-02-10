@@ -18,5 +18,10 @@
  */
 package org.dependencytrack.parser.vulndb.model;
 
+/**
+ * The response from VulnDB Vulnerability API will respond with 0 or more classifications.
+ * This class defines the Classification objects returned.
+ * Record created to replace the model class defined here: <a href="https://github.com/stevespringett/vulndb-data-mirror">...</a>
+ */
 public record Classification(int id, String name, String longname, String description, String mediumtext) {
 }

@@ -18,5 +18,10 @@
  */
 package org.dependencytrack.parser.vulndb.model;
 
+/**
+ * The response from VulnDB Vulnerability API will respond with 0 or more external
+ * texts. This record defines the ExternalText objects returned.
+ * Record created to replace the model class defined here: <a href="https://github.com/stevespringett/vulndb-data-mirror">...</a>
+ */
 public record ExternalText(String type, String value) {
 }

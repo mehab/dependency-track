@@ -264,14 +264,15 @@ public class OssIndexAnalysisTask extends BaseComponentAnalyzerTask implements C
         if (apiUsername != null && apiToken != null) {
             request.addHeader("Authorization", HttpUtil.basicAuthHeaderValue(apiUsername, apiToken));
         }
-        final CloseableHttpResponse response = HttpClientPool.getClient().execute(request);
-        HttpEntity responseEntity = response.getEntity();
-        String responseString = EntityUtils.toString(responseEntity);
-        if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-            final OssIndexParser parser = new OssIndexParser();
-            return parser.parse(responseString);
-        } else {
-            handleUnexpectedHttpResponse(LOGGER, API_BASE_URL, response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
+        try (final CloseableHttpResponse response = HttpClientPool.getClient().execute(request)) {
+            HttpEntity responseEntity = response.getEntity();
+            String responseString = EntityUtils.toString(responseEntity);
+            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                final OssIndexParser parser = new OssIndexParser();
+                return parser.parse(responseString);
+            } else {
+                handleUnexpectedHttpResponse(LOGGER, API_BASE_URL, response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
+            }
         }
         return new ArrayList<>();
 

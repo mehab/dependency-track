@@ -121,7 +121,7 @@ public class VulnDbSyncTask implements LoggableSubscriber {
     private void updateDatasource(final Results results) {
         LOGGER.info("Updating datasource with VulnDB vulnerabilities");
         try (QueryManager qm = new QueryManager()) {
-            for (final Object o : results.results()) {
+            for (final Object o : results.getResults()) {
                 if (o instanceof org.dependencytrack.parser.vulndb.model.Vulnerability) {
                     final org.dependencytrack.parser.vulndb.model.Vulnerability vulnDbVuln = (org.dependencytrack.parser.vulndb.model.Vulnerability) o;
                     final org.dependencytrack.model.Vulnerability vulnerability = ModelConverter.convert(qm, vulnDbVuln);

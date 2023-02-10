@@ -33,7 +33,7 @@ import org.dependencytrack.model.Vulnerability;
 import org.dependencytrack.model.VulnerabilityAnalysisLevel;
 import org.dependencytrack.parser.vulndb.ModelConverter;
 import org.dependencytrack.parser.vulndb.VulnDbClient;
-import org.dependencytrack.parser.vulndb.model.Results1;
+import org.dependencytrack.parser.vulndb.model.Results;
 import org.dependencytrack.persistence.QueryManager;
 import org.dependencytrack.util.NotificationUtil;
 
@@ -146,7 +146,7 @@ public class VulnDbAnalysisTask extends BaseComponentAnalyzerTask implements Sub
                     boolean more = true;
                     while (more) {
                         try {
-                            final Results1 results = api.getVulnerabilitiesByCpe(component.getCpe(), PAGE_SIZE, page);
+                            final Results results = api.getVulnerabilitiesByCpe(component.getCpe(), PAGE_SIZE, page);
                             if (results.isSuccessful()) {
                                 more = processResults(results, component);
                                 page++;
@@ -166,7 +166,7 @@ public class VulnDbAnalysisTask extends BaseComponentAnalyzerTask implements Sub
     }
 
     @SuppressWarnings("unchecked")
-    private boolean processResults(final Results1 results, final Component component) {
+    private boolean processResults(final Results results, final Component component) {
         try (final QueryManager qm = new QueryManager()) {
             final Component vulnerableComponent = qm.getObjectByUuid(Component.class, component.getUuid()); // Refresh component and attach to current pm.
             for (org.dependencytrack.parser.vulndb.model.Vulnerability vulnDbVuln : (List<org.dependencytrack.parser.vulndb.model.Vulnerability>) results.getResults()) {

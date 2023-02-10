@@ -18,5 +18,9 @@
  */
 package org.dependencytrack.parser.vulndb.model;
 
+/**
+ * Defines an optional CPE returned in a response.
+ * Record created to replace the model class defined here: <a href="https://github.com/stevespringett/vulndb-data-mirror">...</a>
+ */
 public record Cpe(String cpe, String type) {
 }

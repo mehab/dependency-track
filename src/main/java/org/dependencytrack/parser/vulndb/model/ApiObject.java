@@ -22,7 +22,7 @@ package org.dependencytrack.parser.vulndb.model;
  * This interface defines the top-level (and queryable) objects that
  * VulnDB supports.
  *
- * @author Steve Springett
+ *
  */
 public interface ApiObject {
     int id();

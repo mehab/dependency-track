@@ -20,5 +20,10 @@ package org.dependencytrack.parser.vulndb.model;
 
 import java.util.List;
 
+/**
+ * The response from VulnDB Product API will respond with 0 or more products.
+ * This record defines the Product objects returned.
+ * Record created to replace the model class defined here: <a href="https://github.com/stevespringett/vulndb-data-mirror">...</a>
+ */
 public record Product(int id, String name, List<Version> versions) implements ApiObject{
 }

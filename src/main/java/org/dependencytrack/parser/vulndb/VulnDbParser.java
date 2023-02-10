@@ -30,7 +30,6 @@ import org.dependencytrack.parser.vulndb.model.ExternalText;
 import org.dependencytrack.parser.vulndb.model.NvdAdditionalInfo;
 import org.dependencytrack.parser.vulndb.model.Product;
 import org.dependencytrack.parser.vulndb.model.Results;
-import org.dependencytrack.parser.vulndb.model.Results1;
 import org.dependencytrack.parser.vulndb.model.Status;
 import org.dependencytrack.parser.vulndb.model.Vendor;
 import org.dependencytrack.parser.vulndb.model.Version;
@@ -75,27 +74,24 @@ public class VulnDbParser {
 
     public <T> Results<T> parse(Object jsonNode, Class<? extends ApiObject> apiObject) {
         LOGGER.debug("Parsing JSON node");
+
+        final Results<T> results = new Results<>();
         JSONObject root;
         root = (JSONObject) jsonNode;
-        JSONArray rso = root.getJSONArray("results");
-        if (Product.class == apiObject) {
-            results.setResults(this.parseProducts(rso));
-        } else if (Vendor.class == apiObject) {
-            results.setResults(this.parseVendors(rso));
-        } else if (Version.class == apiObject) {
-            results.setResults(this.parseVersions(rso));
-        } else if (Vulnerability.class == apiObject) {
-            results.setResults(this.parseVulnerabilities(rso));
-        }
-        Results<T> results = new Results(root.getInt("current_page"),
-                root.getInt("total_entries"),
-
-                );
-
         results.setPage(root.getInt("current_page"));
         results.setTotal(root.getInt("total_entries"));
         results.setRawResults(jsonNode.toString());
+        final JSONArray rso = root.getJSONArray("results");
 
+        if (Product.class == apiObject) {
+            results.setResults(parseProducts(rso));
+        } else if (Vendor.class == apiObject) {
+            results.setResults(parseVendors(rso));
+        } else if (Version.class == apiObject) {
+            results.setResults(parseVersions(rso));
+        } else if (Vulnerability.class == apiObject) {
+            results.setResults(parseVulnerabilities(rso));
+        }
         return results;
     }
 
@@ -307,15 +303,20 @@ public class VulnDbParser {
                 }
 
                 JSONArray nvdInfo = object.optJSONArray("nvd_additional_information");
-                List<NvdAdditionalInfo> nvdAdditionalInfos = new ArrayList<>();
+               // List<NvdAdditionalInfo> nvdAdditionalInfos = new ArrayList<>();
+                NvdAdditionalInfo nvdAdditionalInfo = null;
                 if (nvdInfo != null) {
-                    for (int j = 0; j < nvdInfo.length(); ++j) {
-                        JSONObject jso = nvdInfo.getJSONObject(j);
-                        NvdAdditionalInfo nvdAdditionalInfo = new NvdAdditionalInfo(StringUtils.trimToNull(jso.optString("summary", (String) null)),
-                                StringUtils.trimToNull(jso.optString("cwe_id", (String) null)),
-                                StringUtils.trimToNull(jso.optString("cve_id", (String) null)));
-                        nvdAdditionalInfos.add(nvdAdditionalInfo);
-                    }
+//                    for (int j = 0; j < nvdInfo.length(); ++j) {
+//                        JSONObject jso = nvdInfo.getJSONObject(j);
+//                        NvdAdditionalInfo nvdAdditionalInfo = new NvdAdditionalInfo(StringUtils.trimToNull(jso.optString("summary", (String) null)),
+//                                StringUtils.trimToNull(jso.optString("cwe_id", (String) null)),
+//                                StringUtils.trimToNull(jso.optString("cve_id", (String) null)));
+//                        nvdAdditionalInfos.add(nvdAdditionalInfo);
+//                    }
+                     nvdAdditionalInfo = new NvdAdditionalInfo(StringUtils.trimToNull(nvdInfo.getJSONObject(nvdInfo.length()-1).optString("summary", (String) null)),
+                            StringUtils.trimToNull(nvdInfo.getJSONObject(nvdInfo.length()-1).optString("cwe_id", (String) null)),
+                            StringUtils.trimToNull(nvdInfo.getJSONObject(nvdInfo.length()-1).optString("cve_id", (String) null)));
+
                 }
 
                 JSONArray vendors = object.optJSONArray("vendors");
@@ -341,8 +342,8 @@ public class VulnDbParser {
                         this.parseVendors(vendors),
                         cvssV2MetricList,
                         cvssV3MetricList,
-                        nvdAdditionalInfos
-                        );
+                        nvdAdditionalInfo
+                );
                 vulnerabilities.add(vulnerability);
             }
         }

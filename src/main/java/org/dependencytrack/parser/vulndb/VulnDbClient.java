@@ -21,7 +21,6 @@ package org.dependencytrack.parser.vulndb;
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.basic.DefaultOAuthConsumer;
 import oauth.signpost.exception.OAuthCommunicationException;
-import oauth.signpost.exception.OAuthException;
 import oauth.signpost.exception.OAuthExpectationFailedException;
 import oauth.signpost.exception.OAuthMessageSignerException;
 import org.apache.http.HttpStatus;
@@ -30,7 +29,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.util.EntityUtils;
 import org.dependencytrack.common.HttpClientPool;
-import org.dependencytrack.parser.vulndb.model.Results1;
+import org.dependencytrack.parser.vulndb.model.Results;
 import org.dependencytrack.parser.vulndb.model.Vulnerability;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -64,7 +63,7 @@ public class VulnDbClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VulnDbClient.class);
 
-    public Results1 getVulnerabilitiesByCpe(String cpe, int size, int page) throws IOException, OAuthMessageSignerException, OAuthExpectationFailedException, URISyntaxException, OAuthCommunicationException {
+    public Results getVulnerabilitiesByCpe(String cpe, int size, int page) throws IOException, OAuthMessageSignerException, OAuthExpectationFailedException, URISyntaxException, OAuthCommunicationException {
         String encodedCpe = cpe;
 
         try {
@@ -77,14 +76,13 @@ public class VulnDbClient {
         return this.getResults(apiBaseUrl + "/api/v1/vulnerabilities/find_by_cpe?&cpe=" + encodedCpe, Vulnerability.class, size, page);
     }
 
-    private Results1 getResults(String url, Class clazz, int size, int page) throws IOException,
+    private Results getResults(String url, Class clazz, int size, int page) throws IOException,
             OAuthMessageSignerException, OAuthExpectationFailedException, URISyntaxException,
             OAuthCommunicationException {
         String modifiedUrl = url.contains("?") ? url + "&" : url + "?";
-        CloseableHttpResponse response = this.makeRequest(modifiedUrl + "size=" + size + "&page=" + page);
-        VulnDbParser vulnDbParser = new VulnDbParser();
-        Results1 results;
-        try {
+        try (CloseableHttpResponse response = this.makeRequest(modifiedUrl + "size=" + size + "&page=" + page)) {
+            VulnDbParser vulnDbParser = new VulnDbParser();
+            Results results;
             if (response != null) {
                 if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
                     String responseString = EntityUtils.toString(response.getEntity());
@@ -92,36 +90,29 @@ public class VulnDbClient {
                     results = vulnDbParser.parse(jsonObject, clazz);
                     return results;
                 } else {
-                    results = new Results1();
+                    results = new Results();
                     results.setErrorCondition("An unexpected response was returned from VulnDB. Request unsuccessful: " + response.getStatusLine().getStatusCode() + " - " + response.getStatusLine().getReasonPhrase());
                     this.logHttpResponseError(response);
                     return results;
                 }
             } else {
-                results = new Results1();
+                results = new Results();
                 results.setErrorCondition("No response was returned from VulnDB. No further information is available.");
                 return results;
             }
-        } catch (IOException ex) {
-            throw ex;
         }
     }
 
     private CloseableHttpResponse makeRequest(String url) throws OAuthMessageSignerException, OAuthExpectationFailedException, IOException, URISyntaxException, OAuthCommunicationException {
-        try {
-            OAuthConsumer consumer = new DefaultOAuthConsumer(this.consumerKey, this.consumerSecret);
-            String signed = consumer.sign(url);
-            URIBuilder uriBuilder = new URIBuilder(signed);
-            HttpGet request = new HttpGet(uriBuilder.build().toString());
-            request.addHeader("X-User-Agent", "Dependency Track (https://github.com/DependencyTrack/dependency-track)");
-            return HttpClientPool.getClient().execute(request);
-        } catch (IOException | OAuthException | URISyntaxException var4) {
-            throw var4;
-        }
+        OAuthConsumer consumer = new DefaultOAuthConsumer(this.consumerKey, this.consumerSecret);
+        String signed = consumer.sign(url);
+        URIBuilder uriBuilder = new URIBuilder(signed);
+        HttpGet request = new HttpGet(uriBuilder.build().toString());
+        request.addHeader("X-User-Agent", "Dependency Track (https://github.com/DependencyTrack/dependency-track)");
+        return HttpClientPool.getClient().execute(request);
     }
 
     private void logHttpResponseError(CloseableHttpResponse response) {
         LOGGER.error("Response was not successful: " + response.getStatusLine().getStatusCode() + " - " + response.getStatusLine().getReasonPhrase());
-        System.err.println("\n" + response.getStatusLine().getStatusCode() + " - " + response.getStatusLine().getReasonPhrase());
     }
 }

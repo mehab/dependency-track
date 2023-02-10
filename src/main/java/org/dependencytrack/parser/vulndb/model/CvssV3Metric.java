@@ -20,6 +20,11 @@ package org.dependencytrack.parser.vulndb.model;
 
 import java.math.BigDecimal;
 
+/**
+ * The response from VulnDB Vulnerability API will respond with 0 or more CVSS Metrics.
+ * This record defines the CvssV3Metric objects returned.
+ * Record created to replace the model class defined here: <a href="https://github.com/stevespringett/vulndb-data-mirror">...</a>
+ */
 public record CvssV3Metric(int id,
                            String attackComplexity, String scope,
                            String attackVector,
