@@ -16,32 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  * Copyright (c) Steve Springett. All Rights Reserved.
  */
-package org.dependencytrack.model.vulndb;
+package org.dependencytrack.parser.vulndb.model;
 
-/*
- * Model class needed by VulnDBAnalysis task. Class brought over from the vulndb-data-mirror repo:
- * <a href="https://github.com/stevespringett/vulndb-data-mirror">...</a>
- */
-public class Cpe {
-    private String cpe;
-    private String type;
-
-    public Cpe() {
-    }
-
-    public String getCpe() {
-        return this.cpe;
-    }
-
-    public void setCpe(String cpe) {
-        this.cpe = cpe;
-    }
-
-    public String getType() {
-        return this.type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
+public record ExternalText(String type, String value) {
 }

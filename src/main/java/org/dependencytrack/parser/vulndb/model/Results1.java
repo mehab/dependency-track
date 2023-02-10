@@ -16,23 +16,25 @@
  * SPDX-License-Identifier: Apache-2.0
  * Copyright (c) Steve Springett. All Rights Reserved.
  */
-package org.dependencytrack.model.vulndb;
+package org.dependencytrack.parser.vulndb.model;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/*
- * Model class needed by VulnDBAnalysis task. Class brought over from the vulndb-data-mirror repo:
- * <a href="https://github.com/stevespringett/vulndb-data-mirror">...</a>
+/**
+ * Defines a top-level Results object containing a list of
+ * possible results and count/page data.
+ *
+ * @author Steve Springett
  */
-public class Results<T> {
+public class Results1<T> {
     private int page;
     private int total;
     private List<T> results = new ArrayList();
     private String rawResults;
     private String errorCondition;
 
-    public Results() {
+    public Results1() {
     }
 
     public int getPage() {

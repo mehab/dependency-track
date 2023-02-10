@@ -16,10 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  * Copyright (c) Steve Springett. All Rights Reserved.
  */
-package org.dependencytrack.model.vulndb;
+package org.dependencytrack.parser.vulndb.model;
 
-public interface ApiObject {
-    int getId();
-
-    void setId(int var1);
+public record NvdAdditionalInfo(String summary, String cweId, String cveId) {
 }
