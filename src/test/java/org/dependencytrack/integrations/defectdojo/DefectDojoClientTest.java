@@ -32,7 +32,12 @@ import org.mockserver.client.MockServerClient;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.verify.VerificationTimes;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.Charset;
 
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 import static org.mockserver.model.HttpRequest.request;
@@ -94,7 +99,14 @@ public class DefectDojoClientTest {
                 );
         DefectDojoUploader uploader = new DefectDojoUploader();
         DefectDojoClient client = new DefectDojoClient(uploader, new URL("https://localhost/defectdojo"));
-        client.uploadDependencyTrackFindings(token, engagementId, new NullInputStream(0));
+        String stringInput = "test input";
+        InputStream inputStream = new ByteArrayInputStream(stringInput.getBytes((Charset.forName("UTF-8"))));
+        client.uploadDependencyTrackFindings(token, engagementId, inputStream);
+        String logMessages = mockServer
+                .retrieveLogMessages(
+                        request()
+                );
+
         testClient.verify(
                 request()
                         .withMethod("POST")
