@@ -99,13 +99,7 @@ public class DefectDojoClientTest {
                 );
         DefectDojoUploader uploader = new DefectDojoUploader();
         DefectDojoClient client = new DefectDojoClient(uploader, new URL("https://localhost/defectdojo"));
-        String stringInput = "test input";
-        InputStream inputStream = new ByteArrayInputStream(stringInput.getBytes((Charset.forName("UTF-8"))));
-        client.uploadDependencyTrackFindings(token, engagementId, inputStream);
-        String logMessages = mockServer
-                .retrieveLogMessages(
-                        request()
-                );
+        client.uploadDependencyTrackFindings(token, engagementId, new NullInputStream(0));
 
         testClient.verify(
                 request()

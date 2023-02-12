@@ -58,7 +58,7 @@ public class DefectDojoClient {
     public void uploadDependencyTrackFindings(final String token, final String engagementId, final InputStream findingsJson) {
         LOGGER.debug("Uploading Dependency-Track findings to DefectDojo");
         HttpPost request = new HttpPost(baseURL + "/api/v2/import-scan/");
-        InputStreamBody inputStreamBody = new InputStreamBody(findingsJson, ContentType.DEFAULT_BINARY, "findings.json");
+        InputStreamBody inputStreamBody = new InputStreamBody(findingsJson, ContentType.APPLICATION_OCTET_STREAM, "findings.json");
         request.addHeader("accept", "application/json");
         request.addHeader("Authorization", "Token " + token);
         HttpEntity data = MultipartEntityBuilder.create().setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
@@ -168,7 +168,7 @@ public class DefectDojoClient {
         HttpPost request = new HttpPost(baseURL + "/api/v2/reimport-scan/");
         request.addHeader("accept", "application/json");
         request.addHeader("Authorization", "Token " + token);
-        InputStreamBody inputStreamBody = new InputStreamBody(findingsJson, ContentType.DEFAULT_BINARY, "findings.json");
+        InputStreamBody inputStreamBody = new InputStreamBody(findingsJson, ContentType.APPLICATION_OCTET_STREAM, "findings.json");
         HttpEntity fileData = MultipartEntityBuilder.create().setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
                 .addPart("file", inputStreamBody)
                 .addPart("engagement", new StringBody(engagementId, ContentType.MULTIPART_FORM_DATA))
